@@ -1,9 +1,25 @@
+package org.example;
+
 public class Main {
     public static void main(String[] args) {
-        Park park = new Park("Центральный парк");
 
-        park.addAttraction("Веревочный парк", "09:00 - 20:00", 250.0);
-        park.addAttraction("Вихрь", "10:00 - 20:00", 400.0);
-        park.addAttraction("Гусеница", "11:00 - 20:00", 200.0);
+        Миска miska = new Миска(30);
+
+        Собака tuzik = new Собака("Tuzik");
+        Кот murka = new Кот("Murka");
+
+        tuzik.бежать(500);
+        tuzik.плыть(10);
+
+        murka.бежать(200);
+        murka.плыть(0);
+
+        murka.есть(miska);
+
+        miska.добавитьЕду(20);
+
+        murka.есть(miska);
+
+        System.out.println("Всего животных: " + Животное.счетчик);
     }
 }
