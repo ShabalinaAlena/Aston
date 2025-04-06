@@ -1,60 +1,39 @@
 package Lesson_14;
 
-
-import org.openqa.selenium.WebElement;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.List;
-
 public class PaymentTest extends BaseTest {
-    @Test(priority = 1)
-    public void verifyPaymentBlockTitle() {
-        PaymentPage paymentPage = new PaymentPage(driver);
-        String actualTitle = paymentPage.getPaymentBlockTitle();
-        Assert.assertEquals(actualTitle, "Онлайн пополнение без комиссии",
-                "Название блока не соответствует ожидаемому");
+    private PaymentPage paymentPage;
+
+    @BeforeMethod
+    public void openPaymentPage() {
+        paymentPage = new PaymentPage(driver);
+        driver.get(BASE_URL + "/payments");
     }
 
-    @Test(priority = 2)
-    public void verifyPaymentLogos() {
-        PaymentPage paymentPage = new PaymentPage(driver);
-        List<WebElement> logos = paymentPage.getPaymentLogos();
-        Assert.assertFalse(logos.isEmpty(), "Логотипы платёжных систем не отображаются");
-        System.out.println("Количество найденных логотипов: " + logos.size());
-    }
-
-    @Test(priority = 3)
-    public void verifyDetailsLink() {
-        PaymentPage paymentPage = new PaymentPage(driver);
-        String originalWindow = driver.getWindowHandle();
-        paymentPage.clickDetailsLink();
-
-        // Переключение на новую вкладку
-        for (String windowHandle : driver.getWindowHandles()) {
-            if (!originalWindow.contentEquals(windowHandle)) {
-                driver.switchTo().window(windowHandle);
-                break;
-            }
-        }
-
-        Assert.assertTrue(driver.getCurrentUrl().contains("payments"),
-                "Ссылка 'Подробнее о сервисе' ведёт не на ожидаемую страницу");
-        driver.close();
-        driver.switchTo().window(originalWindow);
-    }
-
-    @Test(priority = 4)
-    public void testContinueButtonFunctionality() {
-        PaymentPage paymentPage = new PaymentPage(driver);
+    @Test
+    public void verifyPaymentForMobileServices() {
         paymentPage.selectServicesTab();
         paymentPage.enterPhoneNumber("297777777");
         paymentPage.enterAmount("10");
         paymentPage.enterEmail("test@example.com");
-        paymentPage.clickContinueButton();
 
-        // Проверяем, что после нажатия кнопки появилась ошибка (так как это тестовый номер)
-        Assert.assertTrue(paymentPage.isErrorDisplayed(),
-                "Ожидалось сообщение об ошибке после нажатия кнопки 'Продолжить'");
+        PaymentModal modal = paymentPage.clickContinueButton();
+
+        Assert.assertTrue(modal.getDisplayedAmount().contains("10"));
+        Assert.assertEquals(modal.getDisplayedPhone(), "297777777");
+        Assert.assertTrue(modal.getPaymentSystemIconsCount() > 0);
+        Assert.assertTrue(modal.getSubmitButtonText().contains("10"));
+    }
+
+    @Test
+    public void verifyDifferentPaymentOptions() {
+        paymentPage.selectServicesTab();
+        Assert.assertTrue(driver.getPageSource().contains("Услуги связи"));
+
+        paymentPage.selectInternetTab();
+        Assert.assertTrue(driver.getPageSource().contains("Домашний интернет"));
     }
 }
